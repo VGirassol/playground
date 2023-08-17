@@ -1,0 +1,190 @@
+import random
+
+def roll_dice(num_dice, num_sides):
+    return [random.randint(1, num_sides) for _ in range(num_dice)]
+
+def parse_roll_sequence(sequence):
+    rolls = sequence.split('+')
+    result = 0
+    individual_results = []
+    damage_by_type = {'🗡': 0, '⚡': 0, '🌀': 0, '💀': 0, '🔥': 0, '🧠': 0, '⚗️': 0}
+
+    for roll in rolls:
+        roll = roll.strip()
+        num_dice, num_sides = 0, 0
+
+        if 'd' in roll:
+            num_dice_part, num_sides_part = roll.split('d')
+            num_dice = int(num_dice_part)
+
+            num_sides_part = num_sides_part.split('(')[0].strip()
+            num_sides = int(num_sides_part)
+
+            dice_result = roll_dice(num_dice, num_sides)
+            result += sum(dice_result)
+            individual_results.append(f"{num_dice}d{num_sides}: {dice_result}")
+
+            damage_type = roll.split('(')[-1].split(')')[0]
+            if damage_type in damage_by_type:
+                damage_by_type[damage_type] += sum(dice_result)
+        else:
+            if '(' in roll:
+                roll, _ = roll.split('(')
+
+            damage_type = roll.split(')')[-1].strip()
+            if damage_type == '🗡':
+                damage_by_type[damage_type] += int(roll)
+            else:
+                damage_by_type['🗡'] += int(roll)
+            result += int(roll)
+
+    return result, individual_results, damage_by_type
+
+def main():
+    sequences = [
+        "1d8 (🗡) + 2d10 (🧠) + 2d6 (🌀) + 1d6 (💀) + 2d8 (🔥) + 5 (🗡) + 1d4 (🗡) + 3 (🗡)",
+        "1d8 (🗡) + 1d6 (🌀) + 2d6 (🌀) + 1d6 (💀) + 2d8 (🔥) + 5 (🗡) + 1d4 (🗡) + 3 (🗡)",
+        "1d8 (🗡) + 2d10 (🧠) + 2d6 (🌀) + 1d6 (💀) + 2d8 (🔥) + 5 (🗡) + 1d4 (🗡) + 3 (🗡)",
+        "1d4 (🗡) + 4d6 (⚡) + 2d6 (🌀) + 1d6 (💀) + 2d8 (🔥) + 5 (🗡) + 1d4 (🗡) + 3 (🗡)",
+        "1d8 (🗡) + 2d4 (🌀) + 3d6 (⚗️) + 2d6 (🌀) + 1d6 (💀) + 2d8 (🔥) + 5 (🗡) + 1d4 (🗡)"
+    ]
+
+    truques_sequences = {
+        "Lâmina em expansão": "2d6 (🗡) + 5",
+        "Toque arrepiante": "2d8 (💀) + 5",
+        "Mordida congelada": "2d6 (🌀) + 5",
+        "Ferrão da exaustão": "2d4 (💀) + 5"
+    }
+
+    while True:
+        print("Menu Inicial:")
+        print("1. Ataques")
+        print("2. Reações")
+        print("3. Ações Bônus")
+        print("4. Magias do Grimório")
+        print("5. Sair")
+        choice = input("Escolha uma opção (1 a 5): ")
+
+        if choice == '5':
+            break
+        elif choice == '1':
+            print("\nAtaques:")
+            print("1. Espada psiônica")
+            print("2. Espada congelada")
+            print("3. Adaga relâmpago")
+            print("4. Arco congelado")
+            attack_choice = input("Escolha o número do ataque (1 a 4) ou 'voltar' para o menu inicial: ")
+            
+            if attack_choice == 'voltar':
+                continue
+
+            attack_index = int(attack_choice) - 1
+            if attack_index < 0 or attack_index >= len(sequences):
+                print("Opção inválida.")
+                continue
+
+            sequence = sequences[attack_index]
+            sequence_name = ["Espada psiônica", "Espada congelada", "Adaga relâmpago", "Arco congelado"][attack_index]
+            total_result, individual_results, damage_by_type = parse_roll_sequence(sequence)
+
+            print(f"\n{sequence_name}:")
+            for individual_result in individual_results:
+                print(f"  {individual_result}")
+
+            non_zero_damage_types = [f"{damage} ({symbol})" for symbol, damage in damage_by_type.items() if damage != 0]
+            damage_type_str = " + ".join(non_zero_damage_types)
+
+            print(f"  Total por tipo de dano: {damage_type_str}")
+            print(f"  Total: {total_result}\n")
+
+        elif choice == '2':
+            print("\nReações:")
+            print("1. Maldição do Quebrador de Feitiço")
+            print("2. Agulha Prateada")
+            print("3. Escudo Arcano")
+            print("4. Absorver Elementos")
+            reaction_choice = input("Escolha o número da reação (1 a 4) ou 'voltar' para o menu inicial: ")
+            
+            if reaction_choice == 'voltar':
+                continue
+            
+            reaction_index = int(reaction_choice) - 1
+            if reaction_index < 0 or reaction_index >= len(reaction_sequences):
+                print("Opção inválida.")
+                continue
+            
+            reaction_sequence = reaction_sequences[reaction_index]
+            reaction_name = ["Maldição do Quebrador de Feitiço", "Agulha Prateada", "Escudo Arcano", "Absorver Elementos"][reaction_index]
+            total_result, individual_results, damage_by_type = parse_roll_sequence(reaction_sequence)
+
+            print(f"\n{reaction_name}:")
+            for individual_result in individual_results:
+                print(f"  {individual_result}")
+
+            non_zero_damage_types = [f"{damage} ({symbol})" for symbol, damage in damage_by_type.items() if damage != 0]
+            damage_type_str = " + ".join(non_zero_damage_types)
+
+            print(f"  Total por tipo de dano: {damage_type_str}")
+            print(f"  Total: {total_result}\n")
+
+        elif choice == '3':
+            print("\nAções Bônus:")
+            # Opções de ações bônus
+            print("Em construção...")
+
+        elif choice == '4':
+            print("\nMagias do Grimório:")
+            print("1. Truques")
+            print("2. Primeiro nível")
+            print("3. Segundo nível")
+            spell_level_choice = input("Escolha o nível de magia (1 a 3) ou 'voltar' para o menu inicial: ")
+            
+            if spell_level_choice == 'voltar':
+                continue
+            
+            spell_level_index = int(spell_level_choice) - 1
+            if spell_level_index < 0 or spell_level_index >= 3:  # Número total de níveis de magia
+                print("Opção inválida.")
+                continue
+            
+            if spell_level_index == 0:
+                print("\nMagias do Grimório - Truques:")
+                while True:
+                    print("Escolha um truque:")
+                    for index, spell_name in enumerate(truques_sequences.keys(), start=1):
+                        print(f"{index}. {spell_name}")
+                    print(f"{len(truques_sequences) + 1}. Voltar para o menu inicial")
+                    
+                    truques_choice = input("Escolha um truque (1 a 6) ou 'voltar': ")
+                    
+                    if truques_choice == 'voltar':
+                        break
+                    
+                    truques_index = int(truques_choice) - 1
+                    if truques_index < 0 or truques_index >= len(truques_sequences):
+                        print("Opção inválida.")
+                        continue
+                    
+                    spell_name = list(truques_sequences.keys())[truques_index]
+                    spell_sequence = truques_sequences[spell_name]
+                    total_result, individual_results, damage_by_type = parse_roll_sequence(spell_sequence)
+                    
+                    print(f"\n{spell_name} (Truques):")
+                    for individual_result in individual_results:
+                        print(f"  {individual_result}")
+                    
+                    non_zero_damage_types = [f"{damage} ({symbol})" for symbol, damage in damage_by_type.items() if damage != 0]
+                    damage_type_str = " + ".join(non_zero_damage_types)
+                    
+                    print(f"  Total por tipo de dano: {damage_type_str}")
+                    print(f"  Total: {total_result}\n")
+                
+            else:
+                # Opções de magias de outros níveis
+                print("Em construção! Jovem preguiçoso.")
+
+        else:
+            print("Escolha uma opção válida.")
+
+if __name__ == "__main__":
+    main()
