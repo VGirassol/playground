@@ -1,0 +1,6 @@
+import random
+
+class DiceRoller:
+    def __init__(self, num_dice, num_sides):
+        self.num_dice = num_dice
+        self.num_sides = num_sides
